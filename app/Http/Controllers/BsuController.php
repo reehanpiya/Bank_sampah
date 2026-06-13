@@ -1,0 +1,89 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreBsuRequest;
+use Illuminate\Http\Request;
+use App\Models\Bsu;
+
+class BsuController extends Controller
+{
+    /**
+     * LIST BSU
+     */
+    public function index()
+    {
+        $data = Bsu::latest()->paginate(10);
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * DETAIL BSU
+     */
+    public function show($id)
+    {
+        $data = Bsu::findOrFail($id);
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * CREATE BSU
+     */
+    public function store(StoreBsuRequest $request)
+    {
+        $data = Bsu::create(
+            $request->validated()
+        );
+
+        return response()->json([
+            'message' => 'BSU berhasil dibuat',
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * UPDATE BSU
+     */
+    public function update(Request $request, $id)
+    {
+        $bsu = Bsu::findOrFail($id);
+
+        $request->validate([
+            'kode_bsu' => 'required|unique:bsu,kode_bsu,' . $id,
+            'nama_bsu' => 'required|string|max:150',
+            'ketua' => 'nullable|string|max:150',
+            'alamat' => 'required|string',
+            'kecamatan' => 'required|string|max:100',
+            'no_hp' => 'nullable|string|max:20',
+            'status' => 'boolean'
+        ]);
+
+        $bsu->update($request->all());
+
+        return response()->json([
+            'message' => 'BSU berhasil diupdate',
+            'data' => $bsu
+        ]);
+    }
+
+    /**
+     * DELETE BSU
+     */
+    public function destroy($id)
+    {
+        $bsu = Bsu::findOrFail($id);
+        $bsu->delete();
+
+        return response()->json([
+            'message' => 'BSU berhasil dihapus'
+        ]);
+    }
+}

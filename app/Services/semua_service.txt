@@ -1,0 +1,328 @@
+<?php
+
+namespace App\Services\MutasiSaldo;
+
+use App\Models\MutasiSaldo;
+use Illuminate\Support\Facades\DB;
+
+class MutasiSaldoService
+{
+    /**
+     * AMBIL SALDO TERAKHIR NASABAH (SOURCE OF TRUTH)
+     */
+    public function getSaldoTerakhir(int $nasabahId): float
+    {
+        $last = MutasiSaldo::where('nasabah_id', $nasabahId)
+            ->orderByDesc('id')
+            ->first();
+
+        return $last?->saldo_sesudah ?? 0;
+    }
+
+    /**
+     * HITUNG SALDO BARU (AMAN & CONSISTENT)
+     */
+    public function hitungSaldoBaru(int $nasabahId, float $jumlah, string $jenisMutasi): array
+    {
+        $saldoSebelum = $this->getSaldoTerakhir($nasabahId);
+
+        if ($jenisMutasi === 'kredit') {
+            $saldoSesudah = $saldoSebelum + $jumlah;
+        } elseif ($jenisMutasi === 'debit') {
+            $saldoSesudah = $saldoSebelum - $jumlah;
+
+            if ($saldoSesudah < 0) {
+                throw new \Exception("Saldo tidak mencukupi");
+            }
+        } else {
+            throw new \Exception("Jenis mutasi tidak valid");
+        }
+
+        return [
+            'saldo_sebelum' => $saldoSebelum,
+            'saldo_sesudah' => $saldoSesudah,
+        ];
+    }
+
+    /**
+     * CREATE MUTASI (ENGINE UTAMA LEDGER)
+     */
+    public function create(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+
+            // 1. hitung saldo real
+            $saldo = $this->hitungSaldoBaru(
+                $data['nasabah_id'],
+                $data['jumlah'],
+                $data['jenis_mutasi']
+            );
+
+            // 2. simpan mutasi
+            return MutasiSaldo::create([
+                'bsu_id'            => $data['bsu_id'],
+                'nasabah_id'        => $data['nasabah_id'],
+                'transaksi_setor_id'=> $data['transaksi_setor_id'] ?? null,
+                'penarikan_id'      => $data['penarikan_id'] ?? null,
+                'jenis_mutasi'      => $data['jenis_mutasi'],
+                'saldo_sebelum'     => $saldo['saldo_sebelum'],
+                'jumlah'            => $data['jumlah'],
+                'saldo_sesudah'     => $saldo['saldo_sesudah'],
+                'tanggal_mutasi'    => now(),
+                'keterangan'        => $data['keterangan'] ?? null,
+                'created_by'        => $data['created_by'] ?? null,
+            ]);
+        });
+    }
+}
+
+
+<?php
+
+namespace App\Services\Penarikan;
+
+use App\Models\Penarikan;
+use App\Services\MutasiSaldo\MutasiSaldoService;
+use App\Services\Shared\KodeGeneratorService;
+use Illuminate\Support\Facades\DB;
+
+class PenarikanService
+{
+    protected MutasiSaldoService $mutasiService;
+
+    public function __construct(MutasiSaldoService $mutasiService)
+    {
+        $this->mutasiService = $mutasiService;
+    }
+
+    /**
+     * MAIN PROCESS PENARIKAN
+     */
+    public function create(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+
+            $nasabahId = $data['nasabah_id'];
+            $jumlahTarik = $data['jumlah_tarik'];
+
+            /**
+             * 1. AMBIL SALDO ASLI (SOURCE OF TRUTH)
+             */
+            $saldoSebelum = $this->mutasiService->getSaldoTerakhir($nasabahId);
+
+            /**
+             * 2. VALIDASI DASAR
+             */
+            if ($jumlahTarik <= 0) {
+                throw new \Exception("Jumlah penarikan harus lebih dari 0");
+            }
+
+            if ($jumlahTarik > $saldoSebelum) {
+                throw new \Exception("Saldo tidak mencukupi untuk penarikan");
+            }
+
+            $saldoSesudah = $saldoSebelum - $jumlahTarik;
+
+            /**
+             * 3. GENERATE KODE
+             */
+            $kode = KodeGeneratorService::generate(
+                'PN',
+                'penarikan',
+                'kode_penarikan'
+            );
+
+            /**
+             * 4. SIMPAN PENARIKAN (BUSINESS RECORD)
+             */
+            $penarikan = Penarikan::create([
+                'kode_penarikan'   => $kode,
+                'bsu_id'           => $data['bsu_id'],
+                'nasabah_id'       => $nasabahId,
+                'tanggal_penarikan'=> now(),
+                'saldo_sebelum'    => $saldoSebelum,
+                'jumlah_tarik'     => $jumlahTarik,
+                'saldo_sesudah'    => $saldoSesudah,
+                'status'           => 'posted',
+                'keterangan'       => $data['keterangan'] ?? null,
+                'created_by'       => $data['user_id'] ?? null,
+            ]);
+
+            /**
+             * 5. LEDGER (WAJIB VIA MUTASI SERVICE)
+             */
+            $this->mutasiService->create([
+                'bsu_id'            => $data['bsu_id'],
+                'nasabah_id'        => $nasabahId,
+                'penarikan_id'      => $penarikan->id,
+                'jenis_mutasi'      => 'debit',
+                'jumlah'            => $jumlahTarik,
+                'keterangan'        => 'Penarikan saldo',
+                'created_by'        => $data['user_id'] ?? null,
+            ]);
+
+            return $penarikan;
+        });
+    }
+}
+
+
+<?php
+
+namespace App\Services\Pricing;
+
+use App\Models\HargaSampah;
+use Carbon\Carbon;
+
+class HargaSampahService
+{
+    /**
+     * Ambil harga aktif berdasarkan jenis sampah
+     */
+    public function getHargaAktif(int $jenisSampahId): ?HargaSampah
+    {
+        return HargaSampah::where('jenis_sampah_id', $jenisSampahId)
+            ->where('status_aktif', true)
+            ->where(function ($q) {
+                $q->whereNull('tanggal_berakhir')
+                  ->orWhere('tanggal_berakhir', '>=', Carbon::today());
+            })
+            ->where('tanggal_berlaku', '<=', Carbon::today())
+            ->first();
+    }
+
+    /**
+     * Hitung subtotal (berat x harga)
+     */
+    public function hitungSubtotal(float $berat, float $harga): float
+    {
+        return $berat * $harga;
+    }
+
+    /**
+     * Validasi apakah harga tersedia
+     */
+    public function validateHarga(int $jenisSampahId): void
+    {
+        $harga = $this->getHargaAktif($jenisSampahId);
+
+        if (!$harga) {
+            throw new \Exception("Harga aktif tidak ditemukan untuk jenis sampah ID: {$jenisSampahId}");
+        }
+    }
+}
+
+
+<?php
+
+namespace App\Services\TransaksiSetor;
+
+use App\Models\TransaksiSetor;
+use App\Models\TransaksiSetorDetail;
+use App\Models\HargaSampah;
+use App\Services\MutasiSaldo\MutasiSaldoService;
+use Illuminate\Support\Facades\DB;
+
+class TransaksiSetorService
+{
+    protected MutasiSaldoService $mutasiService;
+
+    public function __construct(MutasiSaldoService $mutasiService)
+    {
+        $this->mutasiService = $mutasiService;
+    }
+
+    /**
+     * AMBIL HARGA AKTIF
+     */
+    private function getHargaAktif(int $jenisSampahId)
+    {
+        return HargaSampah::where('jenis_sampah_id', $jenisSampahId)
+            ->where('status_aktif', true)
+            ->where('tanggal_berlaku', '<=', now())
+            ->where(function ($q) {
+                $q->whereNull('tanggal_berakhir')
+                  ->orWhere('tanggal_berakhir', '>=', now());
+            })
+            ->first();
+    }
+
+    /**
+     * CREATE TRANSAKSI SETOR
+     */
+    public function create(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+
+            $totalNilai = 0;
+            $totalBerat = 0;
+            $details = [];
+
+            /**
+             * 1. HITUNG DETAIL TRANSAKSI
+             */
+            foreach ($data['items'] as $item) {
+
+                $harga = $this->getHargaAktif($item['jenis_sampah_id']);
+
+                if (!$harga) {
+                    throw new \Exception(
+                        "Harga tidak ditemukan untuk jenis sampah ID {$item['jenis_sampah_id']}"
+                    );
+                }
+
+                $subtotal = $item['berat'] * $harga->harga;
+
+                $totalBerat += $item['berat'];
+                $totalNilai += $subtotal;
+
+                $details[] = [
+                    'jenis_sampah_id' => $item['jenis_sampah_id'],
+                    'berat' => $item['berat'],
+                    'harga_satuan' => $harga->harga,
+                    'subtotal' => $subtotal,
+                ];
+            }
+
+            /**
+             * 2. SIMPAN HEADER TRANSAKSI
+             */
+            $transaksi = TransaksiSetor::create([
+                'kode_transaksi'   => $data['kode_transaksi'],
+                'bsu_id'           => $data['bsu_id'],
+                'nasabah_id'       => $data['nasabah_id'],
+                'tanggal_transaksi'=> now(),
+                'total_berat'      => $totalBerat,
+                'total_nilai'      => $totalNilai,
+                'status'           => 'posted',
+                'keterangan'       => $data['keterangan'] ?? null,
+                'created_by'       => $data['created_by'] ?? null,
+            ]);
+
+            /**
+             * 3. SIMPAN DETAIL
+             */
+            foreach ($details as $detail) {
+                TransaksiSetorDetail::create([
+                    'transaksi_setor_id' => $transaksi->id,
+                    ...$detail
+                ]);
+            }
+
+            /**
+             * 4. KIRIM KE LEDGER (MUTASI SALDO)
+             */
+            $this->mutasiService->create([
+                'bsu_id' => $data['bsu_id'],
+                'nasabah_id' => $data['nasabah_id'],
+                'transaksi_setor_id' => $transaksi->id,
+                'jenis_mutasi' => 'kredit',
+                'jumlah' => $totalNilai,
+                'created_by' => $data['created_by'] ?? null,
+                'keterangan' => 'Setor sampah',
+            ]);
+
+            return $transaksi;
+        });
+    }
+}

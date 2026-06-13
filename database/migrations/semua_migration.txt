@@ -1,0 +1,585 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+
+            $table->id();
+
+            $table->foreignId('bsu_id')->nullable();
+
+            $table->string('name');
+
+            $table->string('email')->unique();
+
+            $table->timestamp('email_verified_at')->nullable();
+
+            $table->string('password');
+
+            $table->string('role', 20)->default('bsu');
+
+            $table->boolean('status')->default(true);
+
+            $table->timestamp('last_login_at')->nullable();
+
+            $table->rememberToken();
+
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+};
+
+
+
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('bsu', function (Blueprint $table) {
+
+            $table->id();
+
+            // Identitas BSU
+            $table->string('kode_bsu', 20)->unique();
+            $table->string('nama_bsu', 150);
+
+            // Pengurus
+            $table->string('ketua', 150)->nullable();
+
+            // Lokasi
+            $table->text('alamat');
+            $table->string('kecamatan', 100);
+
+            // Kontak
+            $table->string('no_hp', 20)->nullable();
+
+            // Status
+            $table->boolean('status')->default(true);
+
+            // Audit
+            $table->foreignId('created_by')->nullable();
+            $table->foreignId('updated_by')->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Index
+            $table->index('kode_bsu');
+            $table->index('nama_bsu');
+            $table->index('kecamatan');
+            $table->index('status');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('bsu');
+    }
+};<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('jenis_sampah', function (Blueprint $table) {
+
+            $table->id();
+
+            // Identitas Jenis Sampah
+            $table->string('kode', 20)->unique();
+
+            $table->string('nama', 100);
+
+            $table->string('satuan', 20)
+                ->default('Kg');
+
+            // Status
+            $table->boolean('status')
+                ->default(true);
+
+            // Audit
+            $table->foreignId('created_by')
+                ->nullable();
+
+            $table->foreignId('updated_by')
+                ->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Index
+            $table->index('kode');
+            $table->index('nama');
+            $table->index('status');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('jenis_sampah');
+    }
+};<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('nasabah', function (Blueprint $table) {
+
+            $table->id();
+
+            // Relasi BSU
+            $table->foreignId('bsu_id'); 
+
+            // Identitas Nasabah
+            $table->string('nomor_nasabah', 30)->unique();
+
+            $table->string('nik', 20)->nullable();
+
+            $table->string('nama', 150);
+
+            $table->text('alamat');
+
+            $table->string('no_hp', 20)->nullable();
+
+            // Status
+            $table->boolean('status')->default(true);
+
+            // Audit
+            $table->foreignId('created_by')->nullable();
+            $table->foreignId('updated_by')->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Index
+            $table->index('bsu_id');
+            $table->index('nomor_nasabah');
+            $table->index('nama');
+            $table->index('status');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('nasabah');
+    }
+};<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('harga_sampah', function (Blueprint $table) {
+
+            $table->id();
+
+            // Relasi jenis sampah
+            $table->foreignId('jenis_sampah_id');
+
+            // Harga per satuan
+            $table->decimal('harga', 15, 2);
+
+            // Periode berlaku
+            $table->date('tanggal_berlaku');
+
+            $table->date('tanggal_berakhir')
+                ->nullable();
+
+            // Status harga aktif
+            $table->boolean('status_aktif')
+                ->default(true);
+
+            // Audit
+            $table->foreignId('created_by')
+                ->nullable();
+
+            $table->foreignId('updated_by')
+                ->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Index
+            $table->index('jenis_sampah_id');
+            $table->index('tanggal_berlaku');
+            $table->index('tanggal_berakhir');
+            $table->index('status_aktif');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('harga_sampah');
+    }
+};<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('transaksi_setor', function (Blueprint $table) {
+
+            $table->id();
+
+            // Nomor transaksi
+            $table->string('kode_transaksi', 50)
+                ->unique();
+
+            // Relasi bisnis
+            $table->foreignId('bsu_id');
+
+            $table->foreignId('nasabah_id');
+
+            // Tanggal transaksi
+            $table->dateTime('tanggal_transaksi');
+
+            // Ringkasan transaksi
+            $table->decimal('total_berat', 12, 2)
+                ->default(0);
+
+            $table->decimal('total_nilai', 15, 2)
+                ->default(0);
+
+            // Status transaksi
+            $table->string('status', 20)
+                ->default('posted');
+
+            // Catatan tambahan
+            $table->text('keterangan')
+                ->nullable();
+
+            // Audit
+            $table->foreignId('created_by')
+                ->nullable();
+
+            $table->foreignId('updated_by')
+                ->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Index
+            $table->index('kode_transaksi');
+            $table->index('bsu_id');
+            $table->index('nasabah_id');
+            $table->index('tanggal_transaksi');
+            $table->index('status');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('transaksi_setor');
+    }
+};<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('transaksi_setor_detail', function (Blueprint $table) {
+
+            $table->id();
+
+            // Header transaksi
+            $table->foreignId('transaksi_setor_id');
+
+            // Jenis sampah
+            $table->foreignId('jenis_sampah_id');
+
+            // Berat sampah
+            $table->decimal('berat', 12, 2);
+
+            // Harga saat transaksi
+            $table->decimal('harga_satuan', 15, 2);
+
+            // Berat x Harga
+            $table->decimal('subtotal', 15, 2);
+
+            $table->timestamps();
+
+            // Index
+            $table->index('transaksi_setor_id');
+            $table->index('jenis_sampah_id');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('transaksi_setor_detail');
+    }
+};<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('penarikan', function (Blueprint $table) {
+
+            $table->id();
+
+            // Nomor transaksi penarikan
+            $table->string('kode_penarikan', 50)
+                ->unique();
+
+            // Relasi bisnis
+            $table->foreignId('bsu_id');
+
+            $table->foreignId('nasabah_id');
+
+            // Tanggal penarikan
+            $table->dateTime('tanggal_penarikan');
+
+            // Audit saldo
+            $table->decimal('saldo_sebelum', 15, 2);
+
+            $table->decimal('jumlah_tarik', 15, 2);
+
+            $table->decimal('saldo_sesudah', 15, 2);
+
+            // Status transaksi
+            $table->string('status', 20)
+                ->default('posted');
+
+            // Catatan
+            $table->text('keterangan')
+                ->nullable();
+
+            // Audit
+            $table->foreignId('created_by')
+                ->nullable();
+
+            $table->foreignId('updated_by')
+                ->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Index
+            $table->index('kode_penarikan');
+            $table->index('bsu_id');
+            $table->index('nasabah_id');
+            $table->index('tanggal_penarikan');
+            $table->index('status');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('penarikan');
+    }
+};<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('mutasi_saldo', function (Blueprint $table) {
+
+            $table->id();
+
+            // Relasi bisnis
+            $table->foreignId('bsu_id');
+
+            $table->foreignId('nasabah_id');
+
+            // Referensi transaksi
+            $table->foreignId('transaksi_setor_id')
+                ->nullable();
+
+            $table->foreignId('penarikan_id')
+                ->nullable();
+
+            // Jenis mutasi
+            $table->string('jenis_mutasi', 20);
+
+            // Nilai mutasi
+            $table->decimal('saldo_sebelum', 15, 2);
+
+            $table->decimal('jumlah', 15, 2);
+
+            $table->decimal('saldo_sesudah', 15, 2);
+
+            // Tanggal mutasi
+            $table->dateTime('tanggal_mutasi');
+
+            // Catatan
+            $table->text('keterangan')
+                ->nullable();
+
+            // Audit
+            $table->foreignId('created_by')
+                ->nullable();
+
+            $table->timestamps();
+
+            // Index
+            $table->index('bsu_id');
+            $table->index('nasabah_id');
+
+            $table->index('transaksi_setor_id');
+            $table->index('penarikan_id');
+
+            $table->index('jenis_mutasi');
+            $table->index('tanggal_mutasi');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('mutasi_saldo');
+    }
+};<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('activity_logs', function (Blueprint $table) {
+
+            $table->id();
+
+            // User pelaku
+            $table->foreignId('user_id');
+
+            // Aktivitas
+            $table->string('aksi', 100);
+
+            // Nama modul
+            $table->string('modul', 100);
+
+            // ID data terkait
+            $table->unsignedBigInteger('referensi_id')
+                ->nullable();
+
+            // Detail aktivitas
+            $table->text('deskripsi')
+                ->nullable();
+
+            // IP Address
+            $table->string('ip_address', 45)
+                ->nullable();
+
+            // User Agent
+            $table->text('user_agent')
+                ->nullable();
+
+            $table->timestamps();
+
+            // Index
+            $table->index('user_id');
+            $table->index('aksi');
+            $table->index('modul');
+            $table->index('referensi_id');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('activity_logs');
+    }
+};

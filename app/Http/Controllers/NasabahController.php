@@ -42,28 +42,31 @@ class NasabahController extends Controller
 
     public function create()
     {
-        $bsu = Bsu::all();
+        $data = Bsu::all();
 
-        return view('nasabah.create', compact('bsu'));
+        return view('nasabah.create', compact('data'));
     }
 
     public function edit($id)
     {
-        $data = Nasabah::findOrFail($id);
+        $nasabah = Nasabah::findOrFail($id);    
+        $bsus = Bsu::all();                  
 
-        return view('nasabah.edit', compact('data'));
+        return view('nasabah.edit', compact('nasabah', 'bsus'));
     }
     /**
      * CREATE NASABAH
      */
     public function store(StoreNasabahRequest $request)
     {
-        $data = Nasabah::create([
+        Nasabah::create([
             ...$request->validated(),
             'status' => true,
         ]);
 
-        return view('nasabah.show', compact('data'));
+        return redirect()
+            ->route('nasabah.index')
+            ->with('success', 'Nasabah berhasil ditambahkan');
         // return response()->json([
         //     'message' => 'Nasabah berhasil ditambahkan',
         //     'data' => $data
@@ -77,24 +80,23 @@ class NasabahController extends Controller
     {
         $nasabah = Nasabah::findOrFail($id);
 
-        $request->validate([
-            'bsu_id' => 'required|integer',
+        $validated = $request->validate([
+            'bsu_id'       => 'required|integer|exists:bsu,id',
             'nomor_nasabah' => 'required|unique:nasabah,nomor_nasabah,' . $id,
-            'nama' => 'required|string|max:150',
-            'alamat' => 'required|string',
-            'no_hp' => 'nullable|string|max:20',
-            'nik' => 'nullable|string|max:20',
-            'status' => 'boolean'
+            'nama'         => 'required|string|max:150',
+            'alamat'       => 'required|string',
+            'no_hp'        => 'nullable|string|max:20',
+            'nik'          => 'nullable|string|max:20',
+            'status'       => 'nullable|boolean',
         ]);
 
-        $nasabah->update($request->all());
+        $nasabah->update($validated);
 
-        return view('nasabah.show', compact('nasabah'));
-        // return response()->json([
-        //     'message' => 'Nasabah berhasil diupdate',
-        //     'data' => $nasabah
-        // ]);
+        return redirect()
+            ->route('nasabah.index')
+            ->with('success', 'Nasabah berhasil diupdate');
     }
+
 
     /**
      * DELETE NASABAH
@@ -104,6 +106,9 @@ class NasabahController extends Controller
         $nasabah = Nasabah::findOrFail($id);
         $nasabah->delete();
 
+        return redirect()
+        ->route('nasabah.index')
+        ->with('success', 'Nasabah berhasil dihapus');
         // return response()->json([
         //     'message' => 'Nasabah berhasil dihapus'
         // ]);

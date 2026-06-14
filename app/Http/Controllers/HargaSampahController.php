@@ -112,8 +112,11 @@ class HargaSampahController extends Controller
         $harga = HargaSampah::findOrFail($id);
         $harga->delete();
 
-        return response()->json([
-            'message' => 'Harga sampah berhasil dihapus'
-        ]);
+        return redirect()
+        ->route('harga-sampah.index')
+        ->with(
+            'success',
+            'Harga sampah berhasil dihapus'
+        );
     }
 }

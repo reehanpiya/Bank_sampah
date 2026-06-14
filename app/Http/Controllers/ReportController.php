@@ -5,17 +5,69 @@ namespace App\Http\Controllers;
 use App\Models\TransaksiSetor;
 use App\Models\MutasiSaldo;
 use Illuminate\Http\Request;
+use App\Models\TransaksiSetorDetail;
+use App\Models\Bsu;
 
 class ReportController extends Controller
 {
     /**
      * HALAMAN UTAMA LAPORAN
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json([
-            'message' => 'Modul laporan'
+        $query = TransaksiSetorDetail::with([
+            'transaksiSetor.bsu',
+            'jenisSampah'
         ]);
+
+        if ($request->filled('tanggal_awal')) {
+
+            $query->whereHas('transaksiSetor', function ($q) use ($request) {
+
+                $q->whereDate(
+                    'tanggal_transaksi',
+                    '>=',
+                    $request->tanggal_awal
+                );
+            });
+        }
+
+        if ($request->filled('tanggal_akhir')) {
+
+            $query->whereHas('transaksiSetor', function ($q) use ($request) {
+
+                $q->whereDate(
+                    'tanggal_transaksi',
+                    '<=',
+                    $request->tanggal_akhir
+                );
+            });
+        }
+
+        if ($request->filled('bsu_id')) {
+
+            $query->whereHas(
+                'transaksiSetor',
+                function ($q) use ($request) {
+
+                    $q->where(
+                        'bsu_id',
+                        $request->bsu_id
+                    );
+                }
+            );
+        }
+
+        $data = $query
+            ->latest()
+            ->get();
+
+        $bsu = Bsu::orderBy('nama_bsu')->get();
+
+        return view(
+            'laporan.index',
+            compact('data')
+        );
     }
 
     /**
@@ -24,10 +76,10 @@ class ReportController extends Controller
     public function harian(Request $request)
     {
         $data = TransaksiSetor::with([
-                'nasabah',
-                'bsu',
-                'details.jenisSampah'
-            ])
+            'nasabah',
+            'bsu',
+            'details.jenisSampah'
+        ])
             ->when($request->tanggal_awal, function ($q) use ($request) {
                 $q->whereDate(
                     'tanggal_transaksi',
@@ -118,9 +170,9 @@ class ReportController extends Controller
     public function laporanBsi(Request $request)
     {
         $data = TransaksiSetor::with([
-                'bsu',
-                'details.jenisSampah'
-            ])
+            'bsu',
+            'details.jenisSampah'
+        ])
             ->when($request->tanggal_awal, function ($q) use ($request) {
                 $q->whereDate(
                     'tanggal_transaksi',

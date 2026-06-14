@@ -46,4 +46,6 @@ class TransaksiSetorDetail extends Model
     {
         return $this->belongsTo(JenisSampah::class);
     }
+
+    
 }

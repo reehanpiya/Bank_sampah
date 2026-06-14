@@ -77,23 +77,10 @@ class TransaksiSetorController extends Controller
      */
     public function store(StoreTransaksiSetorRequest $request)
     {
-        try {
+       $transaksi = $this->service->create($request->validated());
 
-            $result = $this->service->create(
-                $request->validated()
-            );
-
-            return response()->json([
-                'message' => 'Transaksi setor berhasil diproses',
-                'data' => $result
-            ]);
-
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'message' => 'Gagal memproses transaksi',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+    return redirect()
+        ->route('transaksi-setor.index')
+        ->with('success', 'Transaksi setor berhasil diproses');
     }
 }

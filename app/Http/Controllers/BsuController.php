@@ -52,9 +52,7 @@ class BsuController extends Controller
      */
     public function store(StoreBsuRequest $request)
     {
-        $data = Bsu::create(
-            $request->validated()
-        );
+        Bsu::create($request->validated());
 
         return redirect()
         ->route('bsu.index')
@@ -102,8 +100,8 @@ class BsuController extends Controller
         $bsu = Bsu::findOrFail($id);
         $bsu->delete();
 
-        // return response()->json([
-        //     'message' => 'BSU berhasil dihapus'
-        // ]);
+        return redirect()
+        ->route('bsu.index')
+        ->with('success', 'BSU berhasil dihapus');
     }
 }

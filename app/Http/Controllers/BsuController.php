@@ -15,10 +15,11 @@ class BsuController extends Controller
     {
         $data = Bsu::latest()->paginate(10);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('bsu.index', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -28,12 +29,24 @@ class BsuController extends Controller
     {
         $data = Bsu::findOrFail($id);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('bsu.show', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
+    public function create()
+    {
+        return view('bsu.create');
+    }
+    
+    public function edit($id)
+    {
+        $data = Bsu::findOrFail($id);
+
+        return view('bsu.edit', compact('data'));
+    }
     /**
      * CREATE BSU
      */
@@ -43,10 +56,14 @@ class BsuController extends Controller
             $request->validated()
         );
 
-        return response()->json([
-            'message' => 'BSU berhasil dibuat',
-            'data' => $data
-        ]);
+        return redirect()
+        ->route('bsu.index')
+        ->with('success', 'BSU berhasil dibuat');
+
+        // return response()->json([
+        //     'message' => 'BSU berhasil dibuat',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -68,10 +85,11 @@ class BsuController extends Controller
 
         $bsu->update($request->all());
 
-        return response()->json([
-            'message' => 'BSU berhasil diupdate',
-            'data' => $bsu
-        ]);
+        return view('bsu.edit', compact('data'));
+        // return response()->json([
+        //     'message' => 'BSU berhasil diupdate',
+        //     'data' => $bsu
+        // ]);
     }
 
     /**
@@ -82,8 +100,8 @@ class BsuController extends Controller
         $bsu = Bsu::findOrFail($id);
         $bsu->delete();
 
-        return response()->json([
-            'message' => 'BSU berhasil dihapus'
-        ]);
+        // return response()->json([
+        //     'message' => 'BSU berhasil dihapus'
+        // ]);
     }
 }

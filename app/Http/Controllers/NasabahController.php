@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Nasabah;
 use App\Http\Requests\StoreNasabahRequest;
+use App\Models\Bsu;
 
 class NasabahController extends Controller
 {
@@ -17,10 +18,11 @@ class NasabahController extends Controller
             ->latest()
             ->paginate(10);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('nasabah.index', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -31,12 +33,26 @@ class NasabahController extends Controller
         $data = Nasabah::with('bsu')
             ->findOrFail($id);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('nasabah.show', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
+    public function create()
+    {
+        $bsu = Bsu::all();
+
+        return view('nasabah.create', compact('bsu'));
+    }
+
+    public function edit($id)
+    {
+        $data = Nasabah::findOrFail($id);
+
+        return view('nasabah.edit', compact('data'));
+    }
     /**
      * CREATE NASABAH
      */
@@ -47,10 +63,11 @@ class NasabahController extends Controller
             'status' => true,
         ]);
 
-        return response()->json([
-            'message' => 'Nasabah berhasil ditambahkan',
-            'data' => $data
-        ]);
+        return view('nasabah.show', compact('data'));
+        // return response()->json([
+        //     'message' => 'Nasabah berhasil ditambahkan',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -72,10 +89,11 @@ class NasabahController extends Controller
 
         $nasabah->update($request->all());
 
-        return response()->json([
-            'message' => 'Nasabah berhasil diupdate',
-            'data' => $nasabah
-        ]);
+        return view('nasabah.show', compact('nasabah'));
+        // return response()->json([
+        //     'message' => 'Nasabah berhasil diupdate',
+        //     'data' => $nasabah
+        // ]);
     }
 
     /**
@@ -86,8 +104,8 @@ class NasabahController extends Controller
         $nasabah = Nasabah::findOrFail($id);
         $nasabah->delete();
 
-        return response()->json([
-            'message' => 'Nasabah berhasil dihapus'
-        ]);
+        // return response()->json([
+        //     'message' => 'Nasabah berhasil dihapus'
+        // ]);
     }
 }

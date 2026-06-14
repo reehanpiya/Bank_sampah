@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\HargaSampah;
 use App\Http\Requests\StoreHargaSampahRequest;
+use App\Models\JenisSampah;
 
 class HargaSampahController extends Controller
 {
@@ -17,12 +18,26 @@ class HargaSampahController extends Controller
             ->latest()
             ->paginate(10);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('harga-sampah.index', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
+    public function create()
+    {
+        $jenisSampah = JenisSampah::all();
+        return view('harga-sampah.create', compact('jenisSampah'));
+    }
+
+    public function edit($id)
+    {
+        $hargaSampah = HargaSampah::findOrFail($id);
+        $jenisSampah = JenisSampah::all();
+
+        return view('harga-sampah.edit', compact('hargaSampah', 'jenisSampah'));
+    }
     /**
      * DETAIL HARGA SAMPAH
      */
@@ -31,10 +46,11 @@ class HargaSampahController extends Controller
         $data = HargaSampah::with('jenisSampah')
             ->findOrFail($id);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('harga-sampah.show', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -47,10 +63,16 @@ class HargaSampahController extends Controller
             'status_aktif' => true,
         ]);
 
-        return response()->json([
-            'message' => 'Harga sampah berhasil dibuat',
-            'data' => $data
-        ]);
+        return redirect()
+        ->route('harga-sampah.index')
+        ->with(
+            'success',
+            'Harga sampah berhasil dibuat'
+        );
+        // return response()->json([
+        //     'message' => 'Harga sampah berhasil dibuat',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -70,10 +92,16 @@ class HargaSampahController extends Controller
 
         $harga->update($request->all());
 
-        return response()->json([
-            'message' => 'Harga sampah berhasil diupdate',
-            'data' => $harga
-        ]);
+        return redirect()
+            ->route('harga-sampah.index')
+            ->with(
+                'success',
+                'Harga sampah berhasil diupdate'
+            );
+        // return response()->json([
+        //     'message' => 'Harga sampah berhasil diupdate',
+        //     'data' => $harga
+        // ]);
     }
 
     /**

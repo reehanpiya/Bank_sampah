@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Penarikan;
 use App\Services\Penarikan\PenarikanService;
 use App\Http\Requests\StorePenarikanRequest;
+use App\Models\Bsu;
+use App\Models\Nasabah;
 
 class PenarikanController extends Controller
 {
@@ -16,6 +18,22 @@ class PenarikanController extends Controller
         $this->service = $service;
     }
 
+    public function create()
+    {
+        $bsu = Bsu::all();
+
+        $nasabah = Nasabah::all();
+
+        return view(
+            'penarikan.create',
+            compact(
+                'bsu',
+                'nasabah'
+            )
+        );
+    }
+
+
     /**
      * LIST PENARIKAN
      */
@@ -25,10 +43,11 @@ class PenarikanController extends Controller
             ->latest()
             ->paginate(10);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('penarikan.index', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -39,10 +58,11 @@ class PenarikanController extends Controller
         $data = Penarikan::with(['nasabah', 'bsu'])
             ->findOrFail($id);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('penarikan.show', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
     /**

@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Services\TransaksiSetor\TransaksiSetorService;
 use App\Models\TransaksiSetor;
 use App\Http\Requests\StoreTransaksiSetorRequest;
+use App\Models\Bsu;
+use App\Models\Nasabah;
+use App\Models\JenisSampah;
 
 class TransaksiSetorController extends Controller
 {
@@ -14,6 +17,24 @@ class TransaksiSetorController extends Controller
     public function __construct(TransaksiSetorService $service)
     {
         $this->service = $service;
+    }
+
+    public function create()
+    {
+        $bsu = Bsu::where('status', true)->get();
+
+        $nasabah = Nasabah::where('status', true)->get();
+
+        $jenisSampah = JenisSampah::where('status', true)->get();
+
+        return view(
+            'transaksi-setor.create',
+            compact(
+                'bsu',
+                'nasabah',
+                'jenisSampah'
+            )
+        );
     }
 
     /**
@@ -25,10 +46,11 @@ class TransaksiSetorController extends Controller
             ->latest()
             ->paginate(10);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('transaksi-setor.index', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -39,14 +61,15 @@ class TransaksiSetorController extends Controller
         $data = TransaksiSetor::with([
                 'nasabah',
                 'bsu',
-                'details'
+                'details.jenisSampah'
             ])
             ->findOrFail($id);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('transaksi-setor.show', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
     /**

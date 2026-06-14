@@ -15,10 +15,21 @@ class JenisSampahController extends Controller
     {
         $data = JenisSampah::latest()->paginate(10);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('jenis-sampah.index', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
+    }
+
+    public function create()
+    {
+        return view('jenis-sampah.create');
+    }
+
+    public function edit(JenisSampah $JenisSampah)
+    {
+        return view('jenis-sampah.edit', compact('JenisSampah'));
     }
 
     /**
@@ -28,10 +39,11 @@ class JenisSampahController extends Controller
     {
         $data = JenisSampah::findOrFail($id);
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $data
-        ]);
+        return view('jenis-sampah.show', compact('data'));
+        // return response()->json([
+        //     'message' => 'success',
+        //     'data' => $data
+        // ]);
     }
 
     /**
@@ -46,10 +58,16 @@ class JenisSampahController extends Controller
 
         $jenis = JenisSampah::create($data);
 
-        return response()->json([
-            'message' => 'Jenis sampah berhasil dibuat',
-            'data' => $jenis
-        ]);
+        return redirect()
+        ->route('jenis-sampah.index')
+        ->with(
+            'success',
+            'Jenis sampah berhasil dibuat'
+        );
+        // return response()->json([
+        //     'message' => 'Jenis sampah berhasil dibuat',
+        //     'data' => $jenis
+        // ]);
     }
 
     /**
@@ -68,10 +86,16 @@ class JenisSampahController extends Controller
 
         $jenis->update($request->all());
 
-        return response()->json([
-            'message' => 'Jenis sampah berhasil diupdate',
-            'data' => $jenis
-        ]);
+        return redirect()
+        ->route('jenis-sampah.index')
+        ->with(
+            'success',
+            'Jenis sampah berhasil diperbarui'
+        );
+        // return response()->json([
+        //     'message' => 'Jenis sampah berhasil diupdate',
+        //     'data' => $jenis
+        // ]);
     }
 
     /**
@@ -82,8 +106,14 @@ class JenisSampahController extends Controller
         $jenis = JenisSampah::findOrFail($id);
         $jenis->delete();
 
-        return response()->json([
-            'message' => 'Jenis sampah berhasil dihapus'
-        ]);
+        return redirect()
+        ->route('jenis-sampah.index')
+        ->with(
+            'success',
+            'Jenis sampah berhasil dihapus'
+        );
+        // return response()->json([
+        //     'message' => 'Jenis sampah berhasil dihapus'
+        // ]);
     }
 }

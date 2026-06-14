@@ -7,6 +7,7 @@ use App\Models\TransaksiSetorDetail;
 use App\Models\HargaSampah;
 use App\Services\MutasiSaldo\MutasiSaldoService;
 use Illuminate\Support\Facades\DB;
+use App\Services\Shared\KodeGeneratorService;
 
 class TransaksiSetorService
 {
@@ -72,8 +73,13 @@ class TransaksiSetorService
             /**
              * 2. SIMPAN HEADER TRANSAKSI
              */
+            $kodeTransaksi = KodeGeneratorService::generate(
+                'TRX',
+                'transaksi_setor',
+                'kode_transaksi'
+            );
             $transaksi = TransaksiSetor::create([
-                'kode_transaksi'   => $data['kode_transaksi'],
+                'kode_transaksi'   => $kodeTransaksi,
                 'bsu_id'           => $data['bsu_id'],
                 'nasabah_id'       => $data['nasabah_id'],
                 'tanggal_transaksi'=> now(),

@@ -85,7 +85,9 @@ class BsuController extends Controller
 
         $bsu->update($request->all());
 
-        return view('bsu.edit', compact('data'));
+        return redirect()
+        ->route('bsu.index')
+        ->with('success', 'BSU berhasil diupdate');
         // return response()->json([
         //     'message' => 'BSU berhasil diupdate',
         //     'data' => $bsu

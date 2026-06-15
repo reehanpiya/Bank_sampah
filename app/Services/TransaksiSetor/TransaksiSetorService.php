@@ -8,6 +8,7 @@ use App\Models\HargaSampah;
 use App\Services\MutasiSaldo\MutasiSaldoService;
 use Illuminate\Support\Facades\DB;
 use App\Services\Shared\KodeGeneratorService;
+use Illuminate\Support\Facades\Auth;
 
 class TransaksiSetorService
 {
@@ -23,14 +24,13 @@ class TransaksiSetorService
      */
     private function getHargaAktif(int $jenisSampahId)
     {
-        return HargaSampah::where('jenis_sampah_id', $jenisSampahId)
-            ->where('status_aktif', true)
-            ->where('tanggal_berlaku', '<=', now())
-            ->where(function ($q) {
-                $q->whereNull('tanggal_berakhir')
-                  ->orWhere('tanggal_berakhir', '>=', now());
-            })
-            ->first();
+        return HargaSampah::where(
+            'jenis_sampah_id',
+            $jenisSampahId
+        )
+        ->where('status_aktif', true)
+        ->latest('tanggal_berlaku')
+        ->first();
     }
 
     /**
@@ -73,13 +73,12 @@ class TransaksiSetorService
             /**
              * 2. SIMPAN HEADER TRANSAKSI
              */
-            $kodeTransaksi = KodeGeneratorService::generate(
-                'TRX',
-                'transaksi_setor',
-                'kode_transaksi'
-            );
             $transaksi = TransaksiSetor::create([
-                'kode_transaksi'   => $kodeTransaksi,
+                'kode_transaksi' => KodeGeneratorService::generate(
+                    'TS',
+                    'transaksi_setor',
+                    'kode_transaksi'
+                ),
                 'bsu_id'           => $data['bsu_id'],
                 'nasabah_id'       => $data['nasabah_id'],
                 'tanggal_transaksi'=> now(),
@@ -87,7 +86,7 @@ class TransaksiSetorService
                 'total_nilai'      => $totalNilai,
                 'status'           => 'posted',
                 'keterangan'       => $data['keterangan'] ?? null,
-                'created_by'       => null,
+                'created_by'       => Auth::id(),
             ]);
 
             /**
@@ -109,7 +108,7 @@ class TransaksiSetorService
                 'transaksi_setor_id' => $transaksi->id,
                 'jenis_mutasi' => 'kredit',
                 'jumlah' => $totalNilai,
-                'created_by' => null,
+                'created_by' => Auth::id(),
                 'keterangan' => 'Setor sampah',
             ]);
 

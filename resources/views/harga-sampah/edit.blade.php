@@ -85,7 +85,7 @@
                         class="w-full border rounded-lg px-3 py-2">
                 </div>
 
-                <div>
+                <!-- <div>
                     <label class="block mb-2 text-sm font-medium">
                         Tanggal Berakhir
                     </label>
@@ -99,7 +99,7 @@
                     @error('tanggal_berakhir')
                         <small class="text-red-500">{{ $message }}</small>
                     @enderror
-                </div>
+                </div> -->
 
             </div>
           

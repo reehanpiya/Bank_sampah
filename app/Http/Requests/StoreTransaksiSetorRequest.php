@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use illuminate\Support\Facades\Auth;
 
 class StoreTransaksiSetorRequest extends FormRequest
 {
@@ -19,18 +20,12 @@ class StoreTransaksiSetorRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
 
             'bsu_id' => [
                 'required',
                 'integer',
                 'exists:bsu,id',
-            ],
-
-            'nasabah_id' => [
-                'required',
-                'integer',
-                'exists:nasabah,id',
             ],
 
             'items' => [
@@ -56,6 +51,23 @@ class StoreTransaksiSetorRequest extends FormRequest
                 'string',
             ],
         ];
+
+        if (auth()->user()->role === 'admin_bsu') {
+
+            $rules['nasabah_id'] = [
+                'required',
+                'exists:nasabah,id',
+            ];
+
+        } else {
+
+            $rules['nasabah_id'] = [
+                'nullable',
+                'exists:nasabah,id',
+            ];
+        }
+
+        return $rules;
     }
 
     /**

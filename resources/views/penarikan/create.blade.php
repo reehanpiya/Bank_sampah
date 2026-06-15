@@ -28,7 +28,7 @@
                     Pilih BSU
                 </option>
 
-                @foreach($bsu as $item)
+                @foreach($bsus as $item)
 
                 <option value="{{ $item->id }}">
                     {{ $item->nama_bsu }}
@@ -54,7 +54,7 @@
                     Pilih Nasabah
                 </option>
 
-                @foreach($nasabah as $item)
+                @foreach($nasabahs as $item)
 
                 <option value="{{ $item->id }}">
                     {{ $item->nomor_nasabah }}

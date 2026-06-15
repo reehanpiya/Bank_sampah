@@ -6,6 +6,7 @@ use App\Models\Penarikan;
 use App\Services\MutasiSaldo\MutasiSaldoService;
 use App\Services\Shared\KodeGeneratorService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class PenarikanService
 {
@@ -66,7 +67,7 @@ class PenarikanService
                 'saldo_sesudah'    => $saldoSesudah,
                 'status'           => 'posted',
                 'keterangan'       => $data['keterangan'] ?? null,
-                'created_by'       => null,
+                'created_by'       => Auth::id(),
             ]);
 
             /**
@@ -79,7 +80,7 @@ class PenarikanService
                 'jenis_mutasi'      => 'debit',
                 'jumlah'            => $jumlahTarik,
                 'keterangan'        => 'Penarikan saldo',
-                'created_by'        => null,
+                'created_by'        => Auth::id(),
             ]);
 
             return $penarikan;

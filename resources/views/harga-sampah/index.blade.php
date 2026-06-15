@@ -14,10 +14,12 @@
             </p>
         </div>
 
-        <a href="{{ route('harga-sampah.create') }}"
-           class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            + Tambah Harga Sampah
-        </a>
+        @if(auth()->user()->role == 'admin_bsi')
+            <a href="{{ route('harga-sampah.create') }}"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                + Tambah Harga Sampah
+            </a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -66,7 +68,7 @@
 
                     <td class="p-3">
 
-                        @if($item->status)
+                        @if($item->status_aktif)
                             <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
                                 Aktif
                             </span>
@@ -81,32 +83,36 @@
                     <td class="p-3 text-center">
 
                         <a href="{{ route('harga-sampah.show',$item->id) }}"
-                           class="bg-blue-500 text-white px-3 py-1 rounded mr-2">
+                        class="bg-blue-500 text-white px-3 py-1 rounded mr-2">
                             Detail
                         </a>
 
-                        <a href="{{ route('harga-sampah.edit',$item->id) }}"
-                           class="bg-yellow-500 text-white px-3 py-1 rounded mr-2">
-                            Edit
-                        </a>
+                        @if(auth()->user()->role == 'admin_bsi')
 
-                        <form
-                            action="{{ route('harga-sampah.destroy', $item->id) }}"
-                            method="POST"
-                            class="delete-form inline">
+                            <a href="{{ route('harga-sampah.edit',$item->id) }}"
+                            class="bg-yellow-500 text-white px-3 py-1 rounded mr-2">
+                                Edit
+                            </a>
 
-                            @csrf
-                            @method('DELETE')
+                            <form
+                                action="{{ route('harga-sampah.destroy', $item->id) }}"
+                                method="POST"
+                                class="delete-form inline">
 
-                            <button
-                                type="submit"
-                                class="bg-red-500 text-white px-3 py-1 rounded">
+                                @csrf
+                                @method('DELETE')
 
-                                Hapus
+                                <button
+                                    type="submit"
+                                    class="bg-red-500 text-white px-3 py-1 rounded">
 
-                            </button>
+                                    Hapus
 
-                        </form>
+                                </button>
+
+                            </form>
+
+                        @endif
 
                     </td>
 

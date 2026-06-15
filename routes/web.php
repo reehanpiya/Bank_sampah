@@ -10,6 +10,7 @@ use App\Http\Controllers\HargaSampahController;
 use App\Http\Controllers\TransaksiSetorController;
 use App\Http\Controllers\PenarikanController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TransaksiSetorBsuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -125,7 +126,48 @@ Route::middleware('auth')->group(function () {
         '/laporan/bsi',
         [ReportController::class, 'laporanBsi']
     )->name('laporan.bsi');
-});
+    });
+
+    Route::get(
+        '/laporan/export-csv',
+        [ReportController::class, 'exportCsv']
+    )->name('laporan.export-csv');
+
+    Route::get(
+        '/laporan/export-excel',
+        [ReportController::class, 'exportExcel']
+    )->name('laporan.export-excel');
+
+    Route::resource(
+        'transaksi-setor-bsu',
+        TransaksiSetorBsuController::class
+    );
+
+    Route::get(
+        '/laporan/{id}',
+        [ReportController::class, 'show']
+    )->name('report.show');
+
+
+    Route::middleware(['auth', 'role:admin_bsi'])
+        ->group(function () {
+
+            Route::resource(
+                'jenis-sampah',
+                JenisSampahController::class
+            )->except([
+                'index',
+                'show'
+            ]);
+
+            Route::resource(
+                'harga-sampah',
+                HargaSampahController::class
+            )->except([
+                'index',
+                'show'
+            ]);
+        });
 
 /*
 |--------------------------------------------------------------------------

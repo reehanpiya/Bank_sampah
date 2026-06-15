@@ -69,6 +69,11 @@ class Bsu extends Model
         return $this->hasMany(MutasiSaldo::class);
     }
 
+    public function transaksiSetorBsu()
+    {
+        return $this->hasMany(TransaksiSetorBsu::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Audit Relationships
@@ -84,4 +89,6 @@ class Bsu extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+
 }

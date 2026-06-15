@@ -6,55 +6,54 @@
         <h1 class="text-2xl font-bold mb-6">
             Transaksi Setor Sampah
         </h1>
+        @if ($errors->any())
+    <div class="bg-red-100 p-3 mb-4">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
         <form action="{{ route('transaksi-setor.store') }}" method="POST">
 
             @csrf
-            <div class="mb-4">
+            @if(auth()->user()->role == 'admin_bsi')
 
-                <label class="block mb-2">
-                    BSU
-                </label>
+                <div class="mb-4">
+                    <label class="block mb-2">BSU</label>
 
-                <select name="bsu_id" class="w-full border rounded-lg p-2">
+                    <select name="bsu_id" class="w-full border rounded-lg p-2">
+                        <option value="">Pilih BSU</option>
 
-                    <option value="">
-                        Pilih BSU
+                        @foreach ($bsu as $item)
+                            <option value="{{ $item->id }}">
+                                {{ $item->nama_bsu }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+            @else
+
+                <input type="hidden" name="bsu_id" value="{{ auth()->user()->bsu_id ?? '' }}">
+            @endif
+
+            {{-- Tampilkan Nasabah hanya untuk selain admin_bsi --}}
+    @if(auth()->user()->role != 'admin_bsi')
+        <div class="mb-4">
+            <label class="block mb-2">Nasabah</label>
+            <select name="nasabah_id" class="w-full border rounded-lg p-2" required>
+                <option value="">Pilih Nasabah</option>
+                @foreach ($nasabah as $item)
+                    <option value="{{ $item->id }}">
+                        {{ $item->nomor_nasabah }} - {{ $item->nama }}
                     </option>
-
-                    @foreach ($bsu as $item)
-                        <option value="{{ $item->id }}">
-                            {{ $item->nama_bsu }}
-                        </option>
-                    @endforeach
-
-                </select>
-
-            </div>
-
-            <div class="mb-4">
-
-                <label class="block mb-2">
-                    Nasabah
-                </label>
-
-                <select name="nasabah_id" class="w-full border rounded-lg p-2">
-
-                    <option value="">
-                        Pilih Nasabah
-                    </option>
-
-                    @foreach ($nasabah as $item)
-                        <option value="{{ $item->id }}">
-                            {{ $item->nomor_nasabah }}
-                            -
-                            {{ $item->nama }}
-                        </option>
-                    @endforeach
-
-                </select>
-
-            </div>
+                @endforeach
+            </select>
+        </div>
+    @endif
 
             <h3 class="font-semibold mb-3">
                 Detail Sampah

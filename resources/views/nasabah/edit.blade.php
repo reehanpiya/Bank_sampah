@@ -37,7 +37,7 @@
                     Pilih BSU
                 </option>
 
-                @foreach($bsus as $item)
+                @foreach($bsu as $item)
 
                 <option
                     value="{{ $item->id }}">

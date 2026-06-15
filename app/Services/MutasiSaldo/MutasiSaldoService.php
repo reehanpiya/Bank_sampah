@@ -70,9 +70,8 @@ class MutasiSaldoService
                 'saldo_sesudah'     => $saldo['saldo_sesudah'],
                 'tanggal_mutasi'    => now(),
                 'keterangan'        => $data['keterangan'] ?? null,
-                'created_by'        => null,
+                'created_by'        => $data['created_by'] ?? Auth::id(),
             ]);
         });
     }
 }
-

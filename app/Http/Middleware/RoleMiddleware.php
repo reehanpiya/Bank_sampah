@@ -13,8 +13,17 @@ class RoleMiddleware
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
-    {
+    public function handle(Request $request,Closure $next,string $role): 
+    Response {
+
+        if (!$request->user()) {
+            abort(403);
+        }
+
+        if ($request->user()->role !== $role) {
+            abort(403, 'Akses ditolak');
+        }
+
         return $next($request);
     }
 }

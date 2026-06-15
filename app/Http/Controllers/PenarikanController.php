@@ -18,22 +18,6 @@ class PenarikanController extends Controller
         $this->service = $service;
     }
 
-    public function create()
-    {
-        $bsu = Bsu::all();
-
-        $nasabah = Nasabah::all();
-
-        return view(
-            'penarikan.create',
-            compact(
-                'bsu',
-                'nasabah'
-            )
-        );
-    }
-
-
     /**
      * LIST PENARIKAN
      */
@@ -44,10 +28,6 @@ class PenarikanController extends Controller
             ->paginate(10);
 
         return view('penarikan.index', compact('data'));
-        // return response()->json([
-        //     'message' => 'success',
-        //     'data' => $data
-        // ]);
     }
 
     /**
@@ -59,15 +39,19 @@ class PenarikanController extends Controller
             ->findOrFail($id);
 
         return view('penarikan.show', compact('data'));
-        // return response()->json([
-        //     'message' => 'success',
-        //     'data' => $data
-        // ]);
     }
 
     /**
      * CREATE PENARIKAN (CORE OUTFLOW)
      */
+    public function create()
+        {
+            $bsus = Bsu::orderBy('nama_bsu')->get();
+            $nasabahs = Nasabah::orderBy('nama')->get();
+
+            return view('penarikan.create', compact('bsus', 'nasabahs'));
+        }
+
     public function store(StorePenarikanRequest $request)
     {
         
@@ -77,10 +61,9 @@ class PenarikanController extends Controller
                 $request->validated()
             );
 
-            return response()->json([
-                'message' => 'Penarikan berhasil diproses',
-                'data' => $result
-            ]);
+            return redirect()
+                ->route('penarikan.index')
+                ->with('success', 'Penarikan berhasil diproses');
 
         } catch (\Exception $e) {
 

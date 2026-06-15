@@ -16,10 +16,6 @@ class BsuController extends Controller
         $data = Bsu::latest()->paginate(10);
 
         return view('bsu.index', compact('data'));
-        // return response()->json([
-        //     'message' => 'success',
-        //     'data' => $data
-        // ]);
     }
 
     /**
@@ -30,43 +26,38 @@ class BsuController extends Controller
         $data = Bsu::findOrFail($id);
 
         return view('bsu.show', compact('data'));
-        // return response()->json([
-        //     'message' => 'success',
-        //     'data' => $data
-        // ]);
     }
 
+    /**
+     * CREATE BSU
+     */
     public function create()
     {
         return view('bsu.create');
     }
-    
+
+    public function store(StoreBsuRequest $request)
+    {
+        $data = Bsu::create(
+            $request->validated()
+        );
+
+        return redirect()
+        ->route('bsu.index')
+        ->with('success', 'BSU berhasil ditambahkan');
+    }
+
+    /**
+     * UPDATE BSU
+     */
     public function edit($id)
     {
         $data = Bsu::findOrFail($id);
 
         return view('bsu.edit', compact('data'));
     }
-    /**
-     * CREATE BSU
-     */
-    public function store(StoreBsuRequest $request)
-    {
-        Bsu::create($request->validated());
 
-        return redirect()
-        ->route('bsu.index')
-        ->with('success', 'BSU berhasil dibuat');
 
-        // return response()->json([
-        //     'message' => 'BSU berhasil dibuat',
-        //     'data' => $data
-        // ]);
-    }
-
-    /**
-     * UPDATE BSU
-     */
     public function update(Request $request, $id)
     {
         $bsu = Bsu::findOrFail($id);
@@ -86,10 +77,6 @@ class BsuController extends Controller
         return redirect()
         ->route('bsu.index')
         ->with('success', 'BSU berhasil diupdate');
-        // return response()->json([
-        //     'message' => 'BSU berhasil diupdate',
-        //     'data' => $bsu
-        // ]);
     }
 
     /**

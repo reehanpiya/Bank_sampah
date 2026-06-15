@@ -16,20 +16,6 @@ class JenisSampahController extends Controller
         $data = JenisSampah::latest()->paginate(10);
 
         return view('jenis-sampah.index', compact('data'));
-        // return response()->json([
-        //     'message' => 'success',
-        //     'data' => $data
-        // ]);
-    }
-
-    public function create()
-    {
-        return view('jenis-sampah.create');
-    }
-
-    public function edit(JenisSampah $JenisSampah)
-    {
-        return view('jenis-sampah.edit', compact('JenisSampah'));
     }
 
     /**
@@ -40,39 +26,42 @@ class JenisSampahController extends Controller
         $data = JenisSampah::findOrFail($id);
 
         return view('jenis-sampah.show', compact('data'));
-        // return response()->json([
-        //     'message' => 'success',
-        //     'data' => $data
-        // ]);
     }
 
     /**
      * CREATE JENIS SAMPAH
      */
-    public function store(StoreJenisSampahRequest $request)
+    public function create()
     {
-        $data = $request->validated();
-
-        $data['satuan'] = $data['satuan'] ?? 'Kg';
-        $data['status'] = true;
-
-        $jenis = JenisSampah::create($data);
-
-        return redirect()
-        ->route('jenis-sampah.index')
-        ->with(
-            'success',
-            'Jenis sampah berhasil dibuat'
-        );
-        // return response()->json([
-        //     'message' => 'Jenis sampah berhasil dibuat',
-        //     'data' => $jenis
-        // ]);
+        return view('jenis-sampah.create');
     }
+
+    public function store(StoreJenisSampahRequest $request)
+{
+    $data = $request->validated();
+
+    $data['satuan'] = $data['satuan'] ?? 'Kg';
+    $data['status'] = true;
+
+    $data['created_by'] = auth()->id();
+    $data['updated_by'] = auth()->id();
+
+    $jenis = JenisSampah::create($data);
+
+    return redirect()
+        ->route('jenis-sampah.index')
+        ->with('success', 'Jenis sampah berhasil ditambahkan');
+}
 
     /**
      * UPDATE JENIS SAMPAH
      */
+    public function edit($id)
+    {
+        $JenisSampah = JenisSampah::findOrFail($id);
+        return view('jenis-sampah.edit', compact('JenisSampah'));
+    }
+
     public function update(Request $request, $id)
     {
         $jenis = JenisSampah::findOrFail($id);
@@ -84,18 +73,14 @@ class JenisSampahController extends Controller
             'status' => 'boolean'
         ]);
 
-        $jenis->update($request->all());
+        $jenis->update([
+            ...$request->all(),
+            'updated_by' => auth()->id(),
+        ]);
 
         return redirect()
-        ->route('jenis-sampah.index')
-        ->with(
-            'success',
-            'Jenis sampah berhasil diperbarui'
-        );
-        // return response()->json([
-        //     'message' => 'Jenis sampah berhasil diupdate',
-        //     'data' => $jenis
-        // ]);
+            ->route('jenis-sampah.index')
+            ->with('success', 'Jenis sampah berhasil diupdate');
     }
 
     /**
@@ -107,13 +92,7 @@ class JenisSampahController extends Controller
         $jenis->delete();
 
         return redirect()
-        ->route('jenis-sampah.index')
-        ->with(
-            'success',
-            'Jenis sampah berhasil dihapus'
-        );
-        // return response()->json([
-        //     'message' => 'Jenis sampah berhasil dihapus'
-        // ]);
+            ->route('jenis-sampah.index')
+            ->with('success', 'Jenis sampah berhasil dihapus');
     }
 }

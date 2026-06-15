@@ -9,6 +9,9 @@
             <h1 class="text-2xl font-bold text-gray-800">
                 Data Nasabah
             </h1>
+            <p class="text-sm text-gray-500">
+                Nasabah Bank Sampah
+            </p>
         </div>
 
         <a href="{{ route('nasabah.create') }}"

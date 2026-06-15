@@ -8,6 +8,7 @@ use App\Models\TransaksiSetorBsu;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreTransaksiSetorBsuRequest;
 use App\Services\TransaksiSetorBsu\TransaksiSetorBsuService;
+use App\Helpers\ActivityLogger;
 
 class TransaksiSetorBsuController extends Controller
 {
@@ -70,8 +71,15 @@ class TransaksiSetorBsuController extends Controller
     ) {
         try {
 
-            $this->service->create(
+            $result = $this->service->create(
                 $request->validated()
+            );
+
+            ActivityLogger::log(
+                'CREATE',
+                'SETORAN_BSU',
+                $result->id ?? null,
+                'Setoran BSU dibuat'
             );
 
             return redirect()

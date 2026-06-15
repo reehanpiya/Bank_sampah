@@ -11,6 +11,8 @@ use App\Http\Controllers\TransaksiSetorController;
 use App\Http\Controllers\PenarikanController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransaksiSetorBsuController;
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,9 +30,10 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/dashboard', function () {
-    return view('dashboard.index');
-})->middleware(['auth'])->name('dashboard');
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+     ->name('dashboard')
+     ->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -143,11 +146,16 @@ Route::middleware('auth')->group(function () {
         TransaksiSetorBsuController::class
     );
 
+    
+    Route::get(
+        '/laporan/penarikan/{penarikan}',
+        [ReportController::class, 'showPenarikan']
+    )->name('report.show-penarikan');
+        
     Route::get(
         '/laporan/{id}',
         [ReportController::class, 'show']
     )->name('report.show');
-
 
     Route::middleware(['auth', 'role:admin_bsi'])
         ->group(function () {
@@ -168,6 +176,22 @@ Route::middleware('auth')->group(function () {
                 'show'
             ]);
         });
+
+        Route::get(
+            '/api/nasabah/{bsu}',
+            [NasabahController::class, 'getByBsu']
+        );
+
+/*
+|--------------------------------------------------------------------------
+| log
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/log-aktivitas',
+    [ActivityLogController::class, 'index']
+)->name('activity-log.index');
 
 /*
 |--------------------------------------------------------------------------

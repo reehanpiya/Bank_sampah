@@ -1,47 +1,150 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<!DOCTYPE html>
+<html lang="id">
+<head>
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+    <title>Login - Bank Sampah</title>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+</head>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center">
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+    <div class="w-full max-w-md">
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
+        <div class="bg-white shadow-xl rounded-2xl p-8">
+
+            <div class="text-center mb-8">
+
+                <h1 class="text-3xl font-bold text-green-600">
+                    Bank Sampah
+                </h1>
+
+                <p class="text-gray-500 mt-2">
+                    Sistem Informasi Bank Sampah
+                </p>
+
+            </div>
+
+            @if(session('status'))
+
+                <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+
+                    {{ session('status') }}
+
+                </div>
+
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+            <form
+                method="POST"
+                action="{{ route('login') }}"
+                class="space-y-5">
+
+                @csrf
+
+                {{-- EMAIL --}}
+
+                <div>
+
+                    <label
+                        class="block text-sm font-medium mb-2">
+
+                        Email
+
+                    </label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        value="{{ old('email') }}"
+                        required
+                        autofocus
+
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring focus:ring-green-200">
+
+                    @error('email')
+
+                        <p class="text-red-500 text-sm mt-1">
+                            {{ $message }}
+                        </p>
+
+                    @enderror
+
+                </div>
+
+                {{-- PASSWORD --}}
+
+                <div>
+
+                    <label
+                        class="block text-sm font-medium mb-2">
+
+                        Password
+
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        required
+
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring focus:ring-green-200">
+
+                    @error('password')
+
+                        <p class="text-red-500 text-sm mt-1">
+                            {{ $message }}
+                        </p>
+
+                    @enderror
+
+                </div>
+
+                {{-- REMEMBER --}}
+
+                <div class="flex items-center">
+
+                    <input
+                        type="checkbox"
+                        name="remember"
+                        id="remember"
+                        class="rounded">
+
+                    <label
+                        for="remember"
+                        class="ml-2 text-sm text-gray-600">
+
+                        Remember Me
+
+                    </label>
+
+                </div>
+
+                {{-- BUTTON --}}
+
+                <button
+                    type="submit"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold">
+
+                    Login
+
+                </button>
+
+            </form>
+
         </div>
-    </form>
-</x-guest-layout>
+
+        <p class="text-center text-sm text-gray-500 mt-4">
+
+            © {{ date('Y') }} Bank Sampah
+
+        </p>
+
+    </div>
+
+</body>
+</html>

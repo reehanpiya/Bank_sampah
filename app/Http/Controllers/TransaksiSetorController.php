@@ -10,6 +10,8 @@ use App\Models\Bsu;
 use App\Models\Nasabah;
 use App\Models\JenisSampah;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\ActivityLogger;
+
 
 
 class TransaksiSetorController extends Controller
@@ -26,11 +28,27 @@ class TransaksiSetorController extends Controller
      */
     public function index()
     {
-        $data = TransaksiSetor::with(['nasabah', 'bsu'])
+        $query = TransaksiSetor::with([
+            'nasabah',
+            'bsu'
+        ]);
+
+        if(auth()->user()->role == 'admin_bsu')
+        {
+            $query->where(
+                'bsu_id',
+                auth()->user()->bsu_id
+            );
+        }
+
+        $data = $query
             ->latest()
             ->paginate(10);
 
-        return view('transaksi-setor.index', compact('data'));
+        return view(
+            'transaksi-setor.index',
+            compact('data')
+        );
     }
 
     /**
@@ -53,6 +71,8 @@ class TransaksiSetorController extends Controller
      */
     public function create()
     {
+        
+
         $jenisSampah = JenisSampah::where('status', true)
             ->orderBy('nama')
             ->get();
@@ -104,6 +124,20 @@ class TransaksiSetorController extends Controller
             $result = $this->service->create(
                 $request->validated()
             );
+
+            try {
+
+                ActivityLogger::log(
+                    'CREATE',
+                    'TRANSAKSI_SETOR',
+                    $result->id,
+                    'Menambah transaksi setor'
+                );
+
+            } catch (\Exception $e) {
+
+                dd($e->getMessage());
+            }
 
             return redirect()
                 ->route('transaksi-setor.index')

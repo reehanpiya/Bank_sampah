@@ -20,6 +20,8 @@
                 BSU
             </label>
 
+            @if(auth()->user()->role == 'admin_bsi')
+
             <select
                 name="bsu_id"
                 class="w-full border rounded-lg p-2">
@@ -37,6 +39,8 @@
                 @endforeach
 
             </select>
+
+            @endif
 
         </div>
 

@@ -8,6 +8,7 @@ use App\Services\Penarikan\PenarikanService;
 use App\Http\Requests\StorePenarikanRequest;
 use App\Models\Bsu;
 use App\Models\Nasabah;
+use App\Helpers\ActivityLogger;
 
 class PenarikanController extends Controller
 {
@@ -23,11 +24,27 @@ class PenarikanController extends Controller
      */
     public function index()
     {
-        $data = Penarikan::with(['nasabah', 'bsu'])
+        $query = Penarikan::with([
+            'nasabah',
+            'bsu'
+        ]);
+
+        if(auth()->user()->role == 'admin_bsu')
+        {
+            $query->where(
+                'bsu_id',
+                auth()->user()->bsu_id
+            );
+        }
+
+        $data = $query
             ->latest()
             ->paginate(10);
 
-        return view('penarikan.index', compact('data'));
+        return view(
+            'penarikan.index',
+            compact('data')
+        );
     }
 
     /**
@@ -45,12 +62,35 @@ class PenarikanController extends Controller
      * CREATE PENARIKAN (CORE OUTFLOW)
      */
     public function create()
+    {
+        if(auth()->user()->role == 'admin_bsu')
         {
-            $bsus = Bsu::orderBy('nama_bsu')->get();
-            $nasabahs = Nasabah::orderBy('nama')->get();
+            $nasabahs = Nasabah::where(
+                'bsu_id',
+                auth()->user()->bsu_id
+            )
+            ->where('status', true)
+            ->orderBy('nama')
+            ->get();
 
-            return view('penarikan.create', compact('bsus', 'nasabahs'));
+            return view(
+                'penarikan.create',
+                compact('nasabahs')
+            );
         }
+
+        $bsus = Bsu::orderBy('nama_bsu')->get();
+
+        $nasabahs = Nasabah::orderBy('nama')->get();
+
+        return view(
+            'penarikan.create',
+            compact(
+                'bsus',
+                'nasabahs'
+            )
+        );
+    }
 
     public function store(StorePenarikanRequest $request)
     {
@@ -60,6 +100,13 @@ class PenarikanController extends Controller
             $result = $this->service->create(
                 $request->validated()
             );
+
+            ActivityLogger::log(
+            'CREATE',
+            'PENARIKAN',
+            $result->id ?? null,
+            'Transaksi penarikan dibuat'
+        );
 
             return redirect()
                 ->route('penarikan.index')
@@ -73,4 +120,6 @@ class PenarikanController extends Controller
             ], 500);
         }
     }
+
+    
 }

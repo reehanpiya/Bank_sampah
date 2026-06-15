@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\JenisSampah;
 use App\Http\Requests\StoreJenisSampahRequest;
+use App\Helpers\ActivityLogger;
 
 class JenisSampahController extends Controller
 {
@@ -46,7 +47,15 @@ class JenisSampahController extends Controller
     $data['created_by'] = auth()->id();
     $data['updated_by'] = auth()->id();
 
+
     $jenis = JenisSampah::create($data);
+
+    ActivityLogger::log(
+        'CREATE',
+        'JENIS_SAMPAH',
+        $jenis->id,
+        'Menambah jenis sampah ' . $jenis->nama
+    );
 
     return redirect()
         ->route('jenis-sampah.index')
@@ -78,6 +87,14 @@ class JenisSampahController extends Controller
             'updated_by' => auth()->id(),
         ]);
 
+
+        ActivityLogger::log(
+            'CREATE',
+            'JENIS_SAMPAH',
+            $jenis->id,
+            'Menambah jenis sampah ' . $jenis->nama
+        );
+
         return redirect()
             ->route('jenis-sampah.index')
             ->with('success', 'Jenis sampah berhasil diupdate');
@@ -90,6 +107,14 @@ class JenisSampahController extends Controller
     {
         $jenis = JenisSampah::findOrFail($id);
         $jenis->delete();
+
+
+        ActivityLogger::log(
+            'CREATE',
+            'JENIS_SAMPAH',
+            $jenis->id,
+            'Menambah jenis sampah ' . $jenis->nama
+        );
 
         return redirect()
             ->route('jenis-sampah.index')

@@ -18,12 +18,30 @@ class ReportController extends Controller
     /**
      * LAPORAN SETORAN NASABAH
      */
-    public function index(Request $request)
+public function index(Request $request)
 {
-    $query = TransaksiSetor::with([
-        'bsu',
-        'nasabah',
-    ]);
+    $jenis = $request->get('jenis', 'setoran');
+
+    if ($jenis === 'penarikan') {
+
+        $query = Penarikan::with([
+            'bsu',
+            'nasabah',
+        ]);
+
+        $tanggalField = 'tanggal_penarikan';
+        $orderField = 'tanggal_penarikan';
+
+    } else {
+
+        $query = TransaksiSetor::with([
+            'bsu',
+            'nasabah',
+        ]);
+
+        $tanggalField = 'tanggal_transaksi';
+        $orderField = 'tanggal_transaksi';
+    }
 
     /**
      * FILTER BSU
@@ -64,7 +82,7 @@ class ReportController extends Controller
     if ($request->filled('tanggal_awal')) {
 
         $query->whereDate(
-            'tanggal_transaksi',
+            $tanggalField,
             '>=',
             $request->tanggal_awal
         );
@@ -76,32 +94,99 @@ class ReportController extends Controller
     if ($request->filled('tanggal_akhir')) {
 
         $query->whereDate(
-            'tanggal_transaksi',
+            $tanggalField,
             '<=',
             $request->tanggal_akhir
         );
     }
 
     $data = $query
-        ->latest('tanggal_transaksi')
-        ->paginate(10)
+        ->latest($orderField)
+        ->paginate(3)
         ->withQueryString();
 
-    $bsu = Bsu::orderBy('nama_bsu')->get();
-    $nasabah = Nasabah::orderBy('nama')->get();
+    if(auth()->user()->role == 'admin_bsu')
+    {
+        // dd(
+        //     auth()->user()->bsu_id,
+        //     Nasabah::where(
+        //         'bsu_id',
+        //         auth()->user()->bsu_id
+        //     )->get()
+        // );
+        $bsu = Bsu::where(
+            'id',
+            auth()->user()->bsu_id
+        )->get();
 
+        $nasabah = Nasabah::where(
+            'bsu_id',
+            auth()->user()->bsu_id
+        )
+        ->orderBy('nama')
+        ->get();
+    }
+    else
+    {
+        $bsu = Bsu::orderBy('nama_bsu')->get();
+    }
+    if($request->filled('bsu_id'))
+{
+    $nasabah = Nasabah::where(
+        'bsu_id',
+        $request->bsu_id
+    )
+    ->orderBy('nama')
+    ->get();
+}
+else
+{
+    $nasabah = Nasabah::orderBy('nama')->get();
+}
+
+    /**
+     * CARD SUMMARY
+     */
+    $totalSetoran = TransaksiSetor::query();
+    $totalPenarikan = Penarikan::query();
+
+    if(auth()->user()->role == 'admin_bsu')
+    {
+        $bsu = Bsu::where(
+            'id',
+            auth()->user()->bsu_id
+        )->get();
+
+        $nasabah = Nasabah::where(
+            'bsu_id',
+            auth()->user()->bsu_id
+        )
+        ->orderBy('nama')
+        ->get();
+    }
+    else
+    {
+        $bsu = Bsu::orderBy('nama_bsu')->get();
+
+        $nasabah = Nasabah::orderBy('nama')->get();
+    }
+
+    $totalSetoran = $totalSetoran->sum('total_nilai');
+    $totalPenarikan = $totalPenarikan->sum('jumlah_tarik');
     return view(
         'report.index',
         compact(
             'data',
             'bsu',
-            'nasabah'
+            'nasabah',
+            'jenis',
+            'totalSetoran',
+            'totalPenarikan'
         )
     );
-
-    
 }
 
+    
 public function show($id)
     {
         $transaksi = TransaksiSetor::with([
@@ -322,16 +407,17 @@ public function show($id)
         );
     }
 
-    public function summary()
-    {
-        $totalSetoran = TransaksiSetor::sum(
-        'total_nilai'
-        );
 
-        $totalPenarikan = Penarikan::sum(
-            'jumlah'
+
+    public function showPenarikan(Penarikan $penarikan)
+    {
+        return view(
+            'report.show-penarikan',
+            compact('penarikan')
         );
     }
+
+    
 
     
 }

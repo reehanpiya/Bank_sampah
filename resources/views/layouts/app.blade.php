@@ -101,18 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-</script>
-</body>
-</html>         }
-
-                });
-
-            });
-
-        });
-
-});
 
 </script>
+@stack('scripts')
 </body>
 </html>

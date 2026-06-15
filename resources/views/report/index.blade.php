@@ -21,181 +21,86 @@
     {{-- FILTER --}}
     <div class="bg-white rounded-xl shadow p-4 mb-6">
 
-        <form
-            action="{{ route('laporan.index') }}"
-            method="GET">
+    <form action="{{ route('laporan.index') }}" method="GET">
 
-            @if(auth()->user()->role === 'admin_bsi')
-
-                <div>
-
-                    <label class="block mb-2 text-sm font-medium">
-                        BSU
-                    </label>
-
-                    <select
-                        name="bsu_id"
-                        class="w-full border rounded-lg p-2">
-
-                        <option value="">
-                            Semua BSU
-                        </option>
-
-                        @foreach($bsu as $item)
-
-                            <option
-                                value="{{ $item->id }}"
-                                {{ request('bsu_id') == $item->id ? 'selected' : '' }}>
-
-                                {{ $item->nama_bsu }}
-
-                            </option>
-
-                        @endforeach
-
-                    </select>
-
-                </div>
-
-            @endif
-
-            <div>
-
-                <label class="block mb-2">
-                    Jenis Transaksi
-                </label>
-
-                <select
-                    name="jenis_transaksi"
-                    class="w-full border rounded-lg p-2">
-
-                    <option value="">
-                        Semua
-                    </option>
-
-                    <option
-                        value="setoran"
-                        {{ request('jenis_transaksi') == 'setoran' ? 'selected' : '' }}>
-                        Setoran
-                    </option>
-
-                    <option
-                        value="penarikan"
-                        {{ request('jenis_transaksi') == 'penarikan' ? 'selected' : '' }}>
-                        Penarikan
-                    </option>
-
-                </select>
-
-            </div>
-
-            <div>
-
-                <label class="block mb-2 text-sm font-medium">
-                    Nasabah
-                </label>
-
-                <select
-                    name="nasabah_id"
-                    class="w-full border rounded-lg p-2">
-
-                    <option value="">
-                        Semua Nasabah
-                    </option>
-
-                    @foreach($nasabah as $item)
-
-                        <option
-                            value="{{ $item->id }}"
-                            {{ request('nasabah_id') == $item->id ? 'selected' : '' }}>
-
-                            {{ $item->nama }}
-
-                        </option>
-
+        @if(auth()->user()->role === 'admin_bsi')
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-medium">BSU</label>
+                <select id="bsu_id" name="bsu_id" class="w-full border rounded-lg p-2">
+                    <option value="">Semua BSU</option>
+                    @foreach($bsu as $item)
+                        <option value="{{ $item->id }}">{{ $item->nama_bsu }}</option>
                     @endforeach
-
                 </select>
-
             </div>
+        @endif
+
+        <div class="mb-4">
+            <label class="block mb-2 text-sm font-medium">Nasabah</label>
+            <select
+    id="nasabah_id"
+    name="nasabah_id"
+    class="w-full border rounded-lg p-2">
+
+    <option value="">
+        Semua Nasabah
+    </option>
+
+    @foreach($nasabah as $item)
+        <option value="{{ $item->id }}">
+            {{ $item->nama }}
+        </option>
+    @endforeach
+
+</select>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+                <label class="block mb-2 text-sm font-medium">Tanggal Awal</label>
+                <input type="date" name="tanggal_awal" value="{{ request('tanggal_awal') }}" 
+                       class="w-full border rounded-lg p-2">
+            </div>
+            <div>
+                <label class="block mb-2 text-sm font-medium">Tanggal Akhir</label>
+                <input type="date" name="tanggal_akhir" value="{{ request('tanggal_akhir') }}" 
+                       class="w-full border rounded-lg p-2">
+            </div>
+        </div>
+
+        <!-- Baris tombol -->
+        <div class="flex flex-col sm:flex-row justify-between items-end gap-4">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Kiri: Filter & Reset -->
+            <div class="flex items-center gap-3">
+                <button type="submit" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg transition">
+                    Filter
+                </button>
                 
-                <div>
-                    
-                    <label class="block mb-2 text-sm font-medium">
-                        Tanggal Awal
-                    </label>
-                    
-                    <input
-                    type="date"
-                    name="tanggal_awal"
-                    value="{{ request('tanggal_awal') }}"
-                    class="w-full border rounded-lg p-2">
-                    
-                </div>
-                
-                <div>
-                    
-                    <label class="block mb-2 text-sm font-medium">
-                        Tanggal Akhir
-                    </label>
-                    
-                    <input
-                        type="date"
-                        name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir') }}"
-                        class="w-full border rounded-lg p-2">
-
-                </div>
-
-                
-
-                <div class="mb-4 flex gap-2">
-
-                    <a
-                        href="{{ route('laporan.export-csv', request()->query()) }}"
-                        class="bg-green-600 text-white px-4 py-2 rounded-lg">
-
-                        Export CSV
-
-                    </a>
-
-                    <a
-                        href="{{ route('laporan.export-excel', request()->query()) }}"
-                        class="bg-emerald-700 text-white px-4 py-2 rounded-lg">
-
-                        Export Excel
-
-                    </a>
-
-                </div>
-
-               <div class="flex items-end gap-2">
-
-                    <button
-                        type="submit"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg">
-
-                        Filter
-
-                    </button>
-
-                    <a
-                        href="{{ route('laporan.index') }}"
-                        class="bg-gray-500 text-white px-4 py-2 rounded-lg">
-
-                        Reset
-
-                    </a>
-
-                </div>
-
+                <a href="{{ route('laporan.index') }}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg transition">
+                    Reset
+                </a>
             </div>
 
-        </form>
+            <!-- Kanan: Export CSV & Excel -->
+            <div class="flex items-center gap-3">
+                <a href="{{ route('laporan.export-csv', request()->query()) }}" 
+                   class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg transition flex items-center gap-2">
+                    Export CSV
+                </a>
+                
+                <a href="{{ route('laporan.export-excel', request()->query()) }}" 
+                   class="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-lg transition flex items-center gap-2">
+                    Export Excel
+                </a>
+            </div>
 
-    </div>
+        </div>
+
+    </form>
+</div>
     <div class="grid grid-cols-3 gap-4 mb-6">
 
     <div class="bg-green-100 p-4 rounded-lg">
@@ -236,120 +141,235 @@
 
     </div>
 
-    {{-- TABLE --}}
-    <div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="flex gap-2 mb-4">
 
-        <table class="w-full">
+        <a
+            href="{{ route('laporan.index', array_merge(request()->except('page'), ['jenis' => 'setoran'])) }}"
+            class="{{ request('jenis', 'setoran') == 'setoran'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200' }}
+                px-4 py-2 rounded">
 
-            <thead class="bg-gray-100">
+            Setoran
 
-                <tr>
+        </a>
 
-                    <th class="p-3 text-left">
-                        No
-                    </th>
+        <a
+            href="{{ route('laporan.index', array_merge(request()->except('page'), ['jenis' => 'penarikan'])) }}"
+            class="{{ request('jenis') == 'penarikan'
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-200' }}
+                px-4 py-2 rounded">
 
-                    <th class="p-3 text-left">
-                        Tanggal
-                    </th>
+            Penarikan
 
-                    <th class="p-3 text-left">
-                        Kode Transaksi
-                    </th>
+        </a>
 
-                    <th class="p-3 text-left">
-                        BSU
-                    </th>
+    </div>
 
-                    <th class="p-3 text-left">
-                        Nasabah
-                    </th>
+    {{-- TABLE SETORAN --}}
+@if(request('jenis') != 'penarikan')
 
-                    <th class="p-3 text-right">
-                        Berat (Kg)
-                    </th>
 
-                    <th class="p-3 text-right">
-                        Nilai (Rp)
-                    </th>
 
-                    <th class="p-3 text-center">
-                        Aksi
-                    </th>
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+    
+
+    <table class="w-full">
+
+        <thead class="bg-gray-100">
+
+            <tr>
+
+                <th class="p-3 text-left">
+                    No
+                </th>
+
+                <th class="p-3 text-left">
+                    Tanggal
+                </th>
+
+                <th class="p-3 text-left">
+                    Kode Penarikan
+                </th>
+
+                <th class="p-3 text-left">
+                    BSU
+                </th>
+
+                <th class="p-3 text-left">
+                    Nasabah
+                </th>
+
+                <th class="p-3 text-right">
+                    Berat (Kg)
+                </th>
+
+                <th class="p-3 text-right">
+                    Nilai (Rp)
+                </th>
+
+                <th class="p-3 text-center">
+                    Aksi
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @forelse($data as $item)
+
+                <tr class="border-t">
+
+                    <td class="p-3">
+                        {{ $loop->iteration }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d-m-Y') }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ $item->kode_transaksi }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ $item->bsu->nama_bsu ?? '-' }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ $item->nasabah->nama ?? '-' }}
+                    </td>
+
+                    <td class="p-3 text-right">
+                        {{ number_format($item->total_berat, 2, ',', '.') }}
+                    </td>
+
+                    <td class="p-3 text-right">
+                        Rp {{ number_format($item->total_nilai, 0, ',', '.') }}
+                    </td>
+
+                    <td class="p-3 text-center">
+
+                        <a
+                            href="{{ route('report.show', $item->id) }}"
+                            class="bg-blue-500 text-white px-3 py-1 rounded">
+
+                            Detail
+
+                        </a>
+
+                    </td>
 
                 </tr>
 
-            </thead>
+            @empty
 
-            <tbody>
+                <tr>
 
-                @forelse($data as $item)
+                    <td
+                        colspan="8"
+                        class="p-6 text-center text-gray-500">
 
-                    <tr class="border-t">
+                        Belum ada data transaksi
 
-                        <td class="p-3">
-                            {{ $loop->iteration }}
-                        </td>
+                    </td>
 
-                        <td class="p-3">
-                            {{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d-m-Y') }}
-                        </td>
+                </tr>
 
-                        <td class="p-3">
-                            {{ $item->kode_transaksi }}
-                        </td>
+            @endforelse
 
-                        <td class="p-3">
-                            {{ $item->bsu->nama_bsu ?? '-' }}
-                        </td>
+        </tbody>
 
-                        <td class="p-3">
-                            {{ $item->nasabah->nama ?? '-' }}
-                        </td>
+    </table>
 
-                        <td class="p-3 text-right">
-                            {{ number_format($item->total_berat, 2, ',', '.') }}
-                        </td>
+</div>
+@endif
 
-                        <td class="p-3 text-right">
-                            Rp {{ number_format($item->total_nilai, 0, ',', '.') }}
-                        </td>
+{{-- TABLE PENARIKAN --}}
+@if(request('jenis') == 'penarikan')
 
-                        <td class="p-3 text-center">
+<div class="bg-white rounded-xl shadow overflow-hidden">
 
-                            <a
-                                href="{{ route('report.show', $item->id) }}"
-                                class="bg-blue-500 text-white px-3 py-1 rounded">
+    <table class="w-full">
 
-                                Detail
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="p-3 text-left">No</th>
+                <th class="p-3 text-left">Tanggal</th>
+                <th class="p-3 text-left">Kode Penarikan</th>
+                <th class="p-3 text-left">BSU</th>
+                <th class="p-3 text-left">Nasabah</th>
+                <th class="p-3 text-right">Jumlah Tarik</th>
+                <th class="p-3 text-center">Aksi</th>
+            </tr>
+        </thead>
 
-                            </a>
+        <tbody>
 
-                        </td>
+            @forelse($data as $item)
 
-                    </tr>
+                <tr class="border-t">
 
-                @empty
+                    <td class="p-3">
+                        {{ $loop->iteration }}
+                    </td>
 
-                    <tr>
+                    <td class="p-3">
+                        {{ $item->tanggal_penarikan->format('d-m-Y') }}
+                    </td>
 
-                        <td
-                            colspan="8"
-                            class="p-6 text-center text-gray-500">
+                    <td class="p-3">
+                        {{ $item->kode_penarikan }}
+                    </td>
 
-                            Belum ada data transaksi
+                    <td class="p-3">
+                        {{ $item->bsu->nama_bsu ?? '-' }}
+                    </td>
 
-                        </td>
+                    <td class="p-3">
+                        {{ $item->nasabah->nama ?? '-' }}
+                    </td>
 
-                    </tr>
+                    <td class="p-3 text-right">
+                        Rp {{ number_format($item->jumlah_tarik,0,',','.') }}
+                    </td>
 
-                @endforelse
+                    <td class="p-3 text-center">
 
-            </tbody>
+                        <a
+                            href="{{ route('report.show-penarikan', $item->id) }}"
+                            class="bg-blue-500 text-white px-3 py-1 rounded">
 
-        </table>
+                            Detail
 
-    </div>
+                        </a>
+
+                    </td>
+
+                </tr>
+
+            @empty
+
+                <tr>
+                    <td colspan="7" class="p-6 text-center text-gray-500">
+                        Belum ada data penarikan
+                    </td>
+                </tr>
+
+            @endforelse
+
+        </tbody>
+
+    </table>
+
+</div>
+
+@endif
+    
 
     {{-- PAGINATION --}}
     <div class="mt-4">
@@ -360,4 +380,47 @@
 
 </div>
 
+
+<script>
+
+    console.log('Nasabah:', @json($nasabah));
+
+let bsuSelect = document.getElementById('bsu_id');
+
+if (bsuSelect) {
+
+    bsuSelect.addEventListener('change', function() {
+
+        let bsuId = this.value;
+
+        fetch('/api/nasabah/' + bsuId)
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            let nasabah =
+                document.getElementById('nasabah_id');
+
+            nasabah.innerHTML =
+                '<option value="">Semua Nasabah</option>';
+
+            data.forEach(item => {
+
+                nasabah.innerHTML += `
+                    <option value="${item.id}">
+                        ${item.nama}
+                    </option>
+                `;
+            });
+
+        });
+
+    });
+
+}
+
+</script>
+
 @endsection
+

@@ -6,6 +6,12 @@ use App\Http\Requests\StoreBsuRequest;
 use Illuminate\Http\Request;
 use App\Models\Bsu;
 
+//otomatis generate user
+use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+//end otomatis generate user
+
 class BsuController extends Controller
 {
     /**
@@ -36,16 +42,44 @@ class BsuController extends Controller
         return view('bsu.create');
     }
 
+    //new create automatis generate user
     public function store(StoreBsuRequest $request)
     {
-        $data = Bsu::create(
+        $bsu = Bsu::create(
             $request->validated()
         );
 
+        $namaBsu = Str::lower(
+            str_replace(' ', '', $bsu->nama_bsu)
+        );
+
+        $email = $namaBsu . $bsu->id . '@banksampah.id';
+
+        $angkaKode = preg_replace(
+            '/[^0-9]/',
+            '',
+            $bsu->kode_bsu
+        );
+
+        $passwordPlain = $namaBsu . $angkaKode;
+
+        User::create([
+            'bsu_id'   => $bsu->id,
+            'name'     => $bsu->nama_bsu,
+            'email'    => $email,
+            'password' => Hash::make($passwordPlain),
+            'role'     => 'admin_bsu',
+            'status'   => true,
+        ]);
+
         return redirect()
-        ->route('bsu.index')
-        ->with('success', 'BSU berhasil ditambahkan');
+            ->route('bsu.index')
+            ->with(
+                'success',
+                "BSU berhasil dibuat. Email: {$email} | Password: {$passwordPlain}"
+            );
     }
+    //end new create automatis generate user
 
     /**
      * UPDATE BSU

@@ -51,7 +51,7 @@
                 <tr class="border-t">
 
                     <td class="p-3">
-                        {{ $item->jenisSampah->nama }}
+                        {{ $item->jenisSampah->nama??'-' }}
                     </td>
 
                     <td class="p-3">
